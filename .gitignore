@@ -1,0 +1,15 @@
+node_modules/
+.next/
+out/
+build/
+.env.local
+.env*.local
+data/*.db
+data/*.db-journal
+storage/thumbnails/*
+!storage/thumbnails/.gitkeep
+coverage/
+*.log
+.DS_Store
+.idea/
+.vscode/
