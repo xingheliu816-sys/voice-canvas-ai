@@ -1,0 +1,10 @@
+{
+  "name": "traffic-light",
+  "keywords": ["画交通灯","交通灯","红绿灯","画红绿灯","信号灯"],
+  "objects": [
+    {"id":"tl_body","name":"灯体","shape":"rect","x":400,"y":300,"width":80,"height":200,"fill":"#333333","stroke":"#111","strokeWidth":2,"opacity":1,"rotation":0,"scaleX":1,"scaleY":1},
+    {"id":"tl_red","name":"红灯","shape":"circle","x":400,"y":230,"width":40,"height":40,"fill":"#ff0000","stroke":"#990000","strokeWidth":1,"opacity":1,"rotation":0,"scaleX":1,"scaleY":1},
+    {"id":"tl_yellow","name":"黄灯","shape":"circle","x":400,"y":300,"width":40,"height":40,"fill":"#ffaa00","stroke":"#996600","strokeWidth":1,"opacity":1,"rotation":0,"scaleX":1,"scaleY":1},
+    {"id":"tl_green","name":"绿灯","shape":"circle","x":400,"y":370,"width":40,"height":40,"fill":"#00cc00","stroke":"#008800","strokeWidth":1,"opacity":1,"rotation":0,"scaleX":1,"scaleY":1}
+  ]
+}

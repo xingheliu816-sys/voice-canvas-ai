@@ -1,0 +1,11 @@
+{
+  "name": "christmas-tree",
+  "keywords": ["画圣诞树","圣诞树","圣诞节树","画圣诞","过节树"],
+  "objects": [
+    {"id":"ct_top","name":"树顶三角","shape":"triangle","x":400,"y":150,"width":140,"height":120,"fill":"#228b22","stroke":"#006400","strokeWidth":2,"opacity":1,"rotation":0,"scaleX":1,"scaleY":1},
+    {"id":"ct_mid","name":"树中三角","shape":"triangle","x":400,"y":260,"width":200,"height":130,"fill":"#2e8b57","stroke":"#006400","strokeWidth":2,"opacity":1,"rotation":0,"scaleX":1,"scaleY":1},
+    {"id":"ct_bot","name":"树底三角","shape":"triangle","x":400,"y":380,"width":260,"height":140,"fill":"#3cb371","stroke":"#006400","strokeWidth":2,"opacity":1,"rotation":0,"scaleX":1,"scaleY":1},
+    {"id":"ct_trunk","name":"树干","shape":"rect","x":400,"y":460,"width":60,"height":70,"fill":"#8b4513","stroke":"#5c3010","strokeWidth":2,"opacity":1,"rotation":0,"scaleX":1,"scaleY":1},
+    {"id":"ct_star","name":"星星","shape":"triangle","x":400,"y":65,"width":30,"height":35,"fill":"#ffdd00","stroke":"#ffaa00","strokeWidth":2,"opacity":1,"rotation":180,"scaleX":1,"scaleY":1}
+  ]
+}

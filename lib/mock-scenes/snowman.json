@@ -1,0 +1,12 @@
+{
+  "name": "snowman",
+  "keywords": ["画雪人","雪人","画个雪人","画一个雪人","堆雪人"],
+  "objects": [
+    {"id":"sn_body_b","name":"身体下","shape":"circle","x":400,"y":380,"width":160,"height":160,"fill":"#ffffff","stroke":"#cccccc","strokeWidth":2,"opacity":1,"rotation":0,"scaleX":1,"scaleY":1},
+    {"id":"sn_body_m","name":"身体中","shape":"circle","x":400,"y":260,"width":120,"height":120,"fill":"#ffffff","stroke":"#cccccc","strokeWidth":2,"opacity":1,"rotation":0,"scaleX":1,"scaleY":1},
+    {"id":"sn_head","name":"头","shape":"circle","x":400,"y":170,"width":80,"height":80,"fill":"#ffffff","stroke":"#cccccc","strokeWidth":2,"opacity":1,"rotation":0,"scaleX":1,"scaleY":1},
+    {"id":"sn_eye_l","name":"左眼","shape":"circle","x":380,"y":158,"width":10,"height":10,"fill":"#333","stroke":"","strokeWidth":0,"opacity":1,"rotation":0,"scaleX":1,"scaleY":1},
+    {"id":"sn_eye_r","name":"右眼","shape":"circle","x":420,"y":158,"width":10,"height":10,"fill":"#333","stroke":"","strokeWidth":0,"opacity":1,"rotation":0,"scaleX":1,"scaleY":1},
+    {"id":"sn_nose","name":"鼻子","shape":"triangle","x":400,"y":175,"width":20,"height":30,"fill":"#ff6600","stroke":"#cc5500","strokeWidth":1,"opacity":1,"rotation":0,"scaleX":1,"scaleY":1}
+  ]
+}

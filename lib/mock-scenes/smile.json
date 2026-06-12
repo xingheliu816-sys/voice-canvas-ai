@@ -1,0 +1,10 @@
+{
+  "name": "smile",
+  "keywords": ["画笑脸","画个笑脸","笑脸","画一个笑脸","微笑","画微笑"],
+  "objects": [
+    {"id":"s_face","name":"脸","shape":"circle","x":400,"y":250,"width":200,"height":200,"fill":"#ffdd00","stroke":"#cc9900","strokeWidth":2,"opacity":1,"rotation":0,"scaleX":1,"scaleY":1},
+    {"id":"s_eye_l","name":"左眼","shape":"circle","x":350,"y":210,"width":20,"height":20,"fill":"#333333","stroke":"","strokeWidth":0,"opacity":1,"rotation":0,"scaleX":1,"scaleY":1},
+    {"id":"s_eye_r","name":"右眼","shape":"circle","x":450,"y":210,"width":20,"height":20,"fill":"#333333","stroke":"","strokeWidth":0,"opacity":1,"rotation":0,"scaleX":1,"scaleY":1},
+    {"id":"s_mouth","name":"嘴","shape":"circle","x":400,"y":300,"width":60,"height":40,"fill":"#333333","stroke":"#333333","strokeWidth":2,"opacity":0.6,"rotation":0,"scaleX":1,"scaleY":1}
+  ]
+}

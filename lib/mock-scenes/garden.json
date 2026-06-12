@@ -1,0 +1,15 @@
+{
+  "name": "garden",
+  "keywords": ["画田园风光","田园风光","风景画","画风景","画田园","乡村风景"],
+  "objects": [
+    {"id":"g_sky","name":"天空","shape":"rect","x":400,"y":120,"width":800,"height":240,"fill":"#87ceeb","stroke":"","strokeWidth":0,"opacity":0.5,"rotation":0,"scaleX":1,"scaleY":1},
+    {"id":"g_sun","name":"太阳","shape":"circle","x":680,"y":90,"width":70,"height":70,"fill":"#ffdd00","stroke":"#ffaa00","strokeWidth":2,"opacity":1,"rotation":0,"scaleX":1,"scaleY":1},
+    {"id":"g_mountain","name":"远山","shape":"triangle","x":250,"y":200,"width":400,"height":200,"fill":"#696969","stroke":"#555","strokeWidth":1,"opacity":0.5,"rotation":0,"scaleX":1,"scaleY":1},
+    {"id":"g_mountain2","name":"远山2","shape":"triangle","x":550,"y":210,"width":380,"height":180,"fill":"#808080","stroke":"#666","strokeWidth":1,"opacity":0.4,"rotation":0,"scaleX":1,"scaleY":1},
+    {"id":"g_grass","name":"草地","shape":"rect","x":400,"y":440,"width":800,"height":60,"fill":"#7cfc00","stroke":"#32cd32","strokeWidth":1,"opacity":0.6,"rotation":0,"scaleX":1,"scaleY":1},
+    {"id":"g_tree1","name":"树1","shape":"rect","x":100,"y":320,"width":24,"height":80,"fill":"#8b4513","stroke":"#5c3010","strokeWidth":1,"opacity":1,"rotation":0,"scaleX":1,"scaleY":1},
+    {"id":"g_tree1_top","name":"树冠1","shape":"triangle","x":112,"y":265,"width":80,"height":70,"fill":"#228b22","stroke":"#006400","strokeWidth":1,"opacity":1,"rotation":0,"scaleX":1,"scaleY":1},
+    {"id":"g_tree2","name":"树2","shape":"rect","x":650,"y":310,"width":22,"height":90,"fill":"#8b4513","stroke":"#5c3010","strokeWidth":1,"opacity":1,"rotation":0,"scaleX":1,"scaleY":1},
+    {"id":"g_tree2_top","name":"树冠2","shape":"triangle","x":661,"y":250,"width":90,"height":80,"fill":"#2e8b57","stroke":"#006400","strokeWidth":1,"opacity":1,"rotation":0,"scaleX":1,"scaleY":1}
+  ]
+}

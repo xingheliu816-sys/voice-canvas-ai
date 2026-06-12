@@ -1,0 +1,17 @@
+{
+  "name": "sun-and-trees",
+  "keywords": ["画太阳和树","太阳和三棵树","太阳和树","画太阳和树","阳光树"],
+  "objects": [
+    {"id":"st_sun","name":"太阳","shape":"circle","x":680,"y":100,"width":80,"height":80,"fill":"#ffdd00","stroke":"#ffaa00","strokeWidth":2,"opacity":1,"rotation":0,"scaleX":1,"scaleY":1},
+    {"id":"st_ray1","name":"光线1","shape":"line","x":680,"y":52,"width": 0,"height":-36,"fill":"#ffaa00","stroke":"#ffaa00","strokeWidth":3,"opacity":0.7,"rotation":0,"scaleX":1,"scaleY":1},
+    {"id":"st_ray2","name":"光线2","shape":"line","x":708,"y":62,"width": 14,"height":-28,"fill":"#ffaa00","stroke":"#ffaa00","strokeWidth":3,"opacity":0.7,"rotation":0,"scaleX":1,"scaleY":1},
+    {"id":"st_ray3","name":"光线3","shape":"line","x":652,"y":62,"width": -14,"height":-28,"fill":"#ffaa00","stroke":"#ffaa00","strokeWidth":3,"opacity":0.7,"rotation":0,"scaleX":1,"scaleY":1},
+    {"id":"st_tree1","name":"树1","shape":"rect","x":150,"y":300,"width":30,"height":120,"fill":"#8b4513","stroke":"#5c3010","strokeWidth":1,"opacity":1,"rotation":0,"scaleX":1,"scaleY":1},
+    {"id":"st_tree1_top","name":"树冠1","shape":"triangle","x":165,"y":230,"width":120,"height":100,"fill":"#228b22","stroke":"#006400","strokeWidth":1,"opacity":1,"rotation":0,"scaleX":1,"scaleY":1},
+    {"id":"st_tree2","name":"树2","shape":"rect","x":350,"y":310,"width":26,"height":100,"fill":"#8b4513","stroke":"#5c3010","strokeWidth":1,"opacity":1,"rotation":0,"scaleX":1,"scaleY":1},
+    {"id":"st_tree2_top","name":"树冠2","shape":"triangle","x":363,"y":245,"width":100,"height":90,"fill":"#2e8b57","stroke":"#006400","strokeWidth":1,"opacity":1,"rotation":0,"scaleX":1,"scaleY":1},
+    {"id":"st_tree3","name":"树3","shape":"rect","x":530,"y":320,"width":28,"height":100,"fill":"#8b4513","stroke":"#5c3010","strokeWidth":1,"opacity":1,"rotation":0,"scaleX":1,"scaleY":1},
+    {"id":"st_tree3_top","name":"树冠3","shape":"triangle","x":544,"y":255,"width":110,"height":95,"fill":"#3cb371","stroke":"#006400","strokeWidth":1,"opacity":1,"rotation":0,"scaleX":1,"scaleY":1},
+    {"id":"st_grass","name":"草地","shape":"rect","x":400,"y":440,"width":800,"height":60,"fill":"#7cfc00","stroke":"#32cd32","strokeWidth":1,"opacity":0.6,"rotation":0,"scaleX":1,"scaleY":1}
+  ]
+}

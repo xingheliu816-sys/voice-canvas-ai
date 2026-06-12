@@ -1,0 +1,11 @@
+{
+  "name": "taichi",
+  "keywords": ["画太极图","太极图","阴阳图","画太极","阴阳鱼","太极"],
+  "objects": [
+    {"id":"tc_outer","name":"外圆","shape":"circle","x":400,"y":250,"width":200,"height":200,"fill":"transparent","stroke":"#333","strokeWidth":3,"opacity":1,"rotation":0,"scaleX":1,"scaleY":1},
+    {"id":"tc_white","name":"白色半","shape":"circle","x":400,"y":250,"width":200,"height":200,"fill":"#ffffff","stroke":"","strokeWidth":0,"opacity":1,"rotation":0,"scaleX":1,"scaleY":0.5},
+    {"id":"tc_black_large","name":"黑大圆","shape":"circle","x":400,"y":300,"width":200,"height":200,"fill":"#333333","stroke":"","strokeWidth":0,"opacity":1,"rotation":0,"scaleX":1,"scaleY":0.5},
+    {"id":"tc_white_dot","name":"白点","shape":"circle","x":400,"y":300,"width":30,"height":30,"fill":"#ffffff","stroke":"","strokeWidth":0,"opacity":1,"rotation":0,"scaleX":1,"scaleY":1},
+    {"id":"tc_black_dot","name":"黑点","shape":"circle","x":400,"y":200,"width":30,"height":30,"fill":"#333333","stroke":"","strokeWidth":0,"opacity":1,"rotation":0,"scaleX":1,"scaleY":1}
+  ]
+}
