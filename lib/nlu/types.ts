@@ -1,4 +1,4 @@
-import type { CanvasObject, ShapeKind } from '@/lib/canvas/types';
+import type { ShapeKind } from '@/lib/canvas/types';
 
 export type { ShapeKind } from '@/lib/canvas/types';
 
@@ -15,15 +15,6 @@ export interface SelectCommand { type: 'SELECT'; target: TargetRef; }
 export interface ModifyCommand { type: 'MODIFY'; target: TargetRef; changes: Record<string, unknown>; }
 export interface MoveCommand { type: 'MOVE'; target: TargetRef; dx?: number; dy?: number; direction?: string; }
 export interface DeleteCommand { type: 'DELETE'; target: TargetRef; }
-export interface ReplaceCommand { type: 'REPLACE'; target: TargetRef; newShape: Partial<CanvasObject>; }
-export interface OverwriteCanvasCommand { type: 'OVERWRITE_CANVAS'; commands: Command[]; confirmed?: boolean; }
-export interface CanvasCreateCommand { type: 'CANVAS_CREATE'; name?: string; }
-export interface CanvasDeleteCommand { type: 'CANVAS_DELETE'; target: 'current' | { id: string } | { index: number }; confirmed?: boolean; }
-export interface CanvasSwitchCommand { type: 'CANVAS_SWITCH'; target: 'next' | 'prev' | { id: string } | { index: number }; }
-export interface CanvasRenameCommand { type: 'CANVAS_RENAME'; target: 'current' | { id: string }; name: string; }
-export interface CanvasQueryCommand { type: 'CANVAS_QUERY'; }
-export interface CanvasConfigCommand { type: 'CANVAS_CONFIG'; action: 'zoom-in' | 'zoom-out' | 'reset-view'; }
-export interface CanvasBackgroundCommand { type: 'CANVAS_BACKGROUND'; color: string; }
 export interface UndoCommand { type: 'UNDO'; }
 export interface RedoCommand { type: 'REDO'; }
 export interface ClearCommand { type: 'CLEAR'; confirmed?: boolean; }
@@ -38,8 +29,8 @@ export interface ProjectDeleteCommand { type: 'PROJECT_DELETE'; target: 'current
 export interface BatchCommand { type: 'BATCH'; batchId: string; commands: Command[]; }
 export interface UnknownCommand { type: 'UNKNOWN'; rawText: string; }
 
-export type Command = CreateCommand | SelectCommand | ModifyCommand | MoveCommand | DeleteCommand | ReplaceCommand | OverwriteCanvasCommand | CanvasCreateCommand | CanvasDeleteCommand | CanvasSwitchCommand | CanvasRenameCommand | CanvasQueryCommand | CanvasConfigCommand | CanvasBackgroundCommand | UndoCommand | RedoCommand | ClearCommand | ExportCommand | QueryCommand | ProjectSaveCommand | ProjectSaveAsCommand | ProjectListCommand | ProjectOpenCommand | ProjectRenameCommand | ProjectDeleteCommand | BatchCommand | UnknownCommand;
+export type Command = CreateCommand | SelectCommand | ModifyCommand | MoveCommand | DeleteCommand | UndoCommand | RedoCommand | ClearCommand | ExportCommand | QueryCommand | ProjectSaveCommand | ProjectSaveAsCommand | ProjectListCommand | ProjectOpenCommand | ProjectRenameCommand | ProjectDeleteCommand | BatchCommand | UnknownCommand;
 
 export type TargetRef = { type: 'current' } | { type: 'id'; id: string } | { type: 'recent'; n: number } | { type: 'shape'; shape: ShapeKind } | { type: 'color'; color: string } | { type: 'shapeAndColor'; shape: ShapeKind; color: string } | { type: 'index'; index: number } | { type: 'position'; position: string } | { type: 'all' };
 
-export const COMMAND_WHITELIST = ['CREATE','SELECT','MODIFY','MOVE','DELETE','REPLACE','OVERWRITE_CANVAS','CANVAS_CREATE','CANVAS_DELETE','CANVAS_SWITCH','CANVAS_RENAME','CANVAS_QUERY','CANVAS_CONFIG','CANVAS_BACKGROUND','UNDO','REDO','CLEAR','EXPORT','QUERY','BATCH','PROJECT_SAVE','PROJECT_SAVE_AS','PROJECT_LIST','PROJECT_OPEN','PROJECT_RENAME','PROJECT_DELETE'] as const;
+export const COMMAND_WHITELIST = ['CREATE','SELECT','MODIFY','MOVE','DELETE','UNDO','REDO','CLEAR','EXPORT','QUERY','BATCH','PROJECT_SAVE','PROJECT_SAVE_AS','PROJECT_LIST','PROJECT_OPEN','PROJECT_RENAME','PROJECT_DELETE'] as const;

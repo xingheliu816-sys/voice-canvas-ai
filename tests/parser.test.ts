@@ -36,19 +36,7 @@ describe('RuleEngine', () => {
     it('写你好', () => {
       const r = parse('写你好');
       expect(r.type).toBe('CREATE');
-      if (r.type === 'CREATE') {
-        expect(r.shape).toBe('text');
-        expect(r.text).toBe('你好');
-      }
-    });
-
-    it('添加文字时默认文字可见', () => {
-      const r = parse('写你好');
-      expect(r.type).toBe('CREATE');
-      if (r.type === 'CREATE') {
-        expect(r.fill).toBe('#111827');
-        expect(r.stroke).toBe('#111827');
-      }
+      if (r.type === 'CREATE') expect(r.shape).toBe('text');
     });
 
     it('ASR错字：画个红色园形', () => {

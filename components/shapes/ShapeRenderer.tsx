@@ -1,7 +1,5 @@
-import { useCallback } from 'react';
 import { Circle, Rect, Line, Text, RegularPolygon } from 'react-konva';
 import type { CanvasObject } from '@/lib/canvas/types';
-import { useCanvasStore } from '@/lib/canvas/ObjectStore';
 
 interface Props {
   obj: CanvasObject;
@@ -10,16 +8,6 @@ interface Props {
 }
 
 export default function ShapeRenderer({ obj, isSelected, onSelect }: Props) {
-  const onDragEnd = useCallback(
-    (e: { target: { x: () => number; y: () => number } }) => {
-      useCanvasStore.getState().updateObject(obj.id, {
-        x: e.target.x(),
-        y: e.target.y(),
-      });
-    },
-    [obj.id],
-  );
-
   const common = {
     x: obj.x,
     y: obj.y,
@@ -29,10 +17,8 @@ export default function ShapeRenderer({ obj, isSelected, onSelect }: Props) {
     opacity: obj.opacity,
     stroke: isSelected ? '#3b82f6' : obj.stroke,
     strokeWidth: isSelected ? 2 : obj.strokeWidth,
-    draggable: true,
     onClick: onSelect,
-    onTap: onSelect,
-    onDragEnd,
+    onTap: onSelect
   };
 
   switch (obj.shape) {
@@ -43,7 +29,7 @@ export default function ShapeRenderer({ obj, isSelected, onSelect }: Props) {
     case 'triangle':
       return <RegularPolygon {...common} sides={3} radius={obj.width / 2} fill={obj.fill} />;
     case 'line':
-      return <Line {...common} points={[0, 0, obj.width, obj.height]} stroke={obj.stroke} strokeWidth={obj.strokeWidth} />;
+      return <Line {...common} points={[0, 0, obj.width, obj.height]} stroke={obj.fill} strokeWidth={2} />;
     case 'text':
       return (
         <Text
