@@ -1,10 +1,15 @@
 {
   "name": "house",
-  "keywords": ["画房子","画个房子","画一间房子","画间房子","房子","房屋"],
+  "keywords": [
+    "画房子","画个房子","画一间房子","画间房子","房子","房屋","屋子","建筑","小屋",
+    "画一个房子","画小房子","小房子","来一个房子","加一个房子","弄一个房子",
+    "帮我画房子","给我画房子","加房子","画房字","房自","房紫"
+  ],
   "objects": [
-    {"id":"h_wall","name":"墙","shape":"rect","x":400,"y":320,"width":300,"height":200,"fill":"#f5deb3","stroke":"#8b7355","strokeWidth":2,"opacity":1,"rotation":0,"scaleX":1,"scaleY":1},
-    {"id":"h_roof","name":"屋顶","shape":"triangle","x":400,"y":195,"width":320,"height":130,"fill":"#cc3333","stroke":"#8b0000","strokeWidth":2,"opacity":1,"rotation":0,"scaleX":1,"scaleY":1},
-    {"id":"h_door","name":"门","shape":"rect","x":400,"y":370,"width":60,"height":100,"fill":"#8b4513","stroke":"#5c3010","strokeWidth":1,"opacity":1,"rotation":0,"scaleX":1,"scaleY":1},
-    {"id":"h_window","name":"窗户","shape":"rect","x":280,"y":280,"width":60,"height":60,"fill":"#87ceeb","stroke":"#5c3010","strokeWidth":2,"opacity":1,"rotation":0,"scaleX":1,"scaleY":1}
+    {"id":"h_wall","name":"墙","shape":"rect","x":400,"y":320,"width":300,"height":200,"fill":"#F5DEB3","stroke":"#8B7355","strokeWidth":2,"opacity":1,"rotation":0,"scaleX":1,"scaleY":1},
+    {"id":"h_roof","name":"屋顶","shape":"triangle","x":400,"y":195,"width":320,"height":130,"fill":"#CC3333","stroke":"#8B0000","strokeWidth":2,"opacity":1,"rotation":0,"scaleX":1,"scaleY":1},
+    {"id":"h_door","name":"门","shape":"rect","x":400,"y":370,"width":60,"height":100,"fill":"#8B4513","stroke":"#5C3010","strokeWidth":1,"opacity":1,"rotation":0,"scaleX":1,"scaleY":1},
+    {"id":"h_window_l","name":"左窗","shape":"rect","x":310,"y":320,"width":55,"height":55,"fill":"#87CEEB","stroke":"#5C3010","strokeWidth":2,"opacity":1,"rotation":0,"scaleX":1,"scaleY":1},
+    {"id":"h_window_r","name":"右窗","shape":"rect","x":490,"y":320,"width":55,"height":55,"fill":"#87CEEB","stroke":"#5C3010","strokeWidth":2,"opacity":1,"rotation":0,"scaleX":1,"scaleY":1}
   ]
 }
