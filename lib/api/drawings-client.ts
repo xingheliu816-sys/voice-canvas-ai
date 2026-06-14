@@ -1,4 +1,4 @@
-import { getProjectSnapshot } from '@/lib/canvas/ObjectStore';
+import { useCanvasStore } from '@/lib/canvas/ObjectStore';
 import type { CanvasObject } from '@/lib/canvas/types';
 
 export interface DrawingItem {
@@ -26,7 +26,7 @@ export async function fetchDrawing(id: string): Promise<DrawingDetail> {
 }
 
 export async function saveDrawing(title: string): Promise<DrawingItem> {
-  const canvasJson = JSON.stringify(getProjectSnapshot(title));
+  const canvasJson = JSON.stringify(useCanvasStore.getState().objects);
   const thumbnailBase64 = await generateThumbnail();
   const res = await fetch('/api/drawings', {
     method: 'POST',
