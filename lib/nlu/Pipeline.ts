@@ -1,5 +1,5 @@
 import { normalize } from './Normalizer';
-import { parse } from './RuleEngine';
+import { parse, shouldUseNativeDraw, SIMPLE_SHAPE_TRIGGERS } from './RuleEngine';
 import { validate } from './SchemaGuard';
 import { executeCommand } from '@/lib/canvas/CommandExecutor';
 import { useVoiceStore } from '@/lib/voice/useVoiceStore';
@@ -9,6 +9,7 @@ import { pushHistory, undo, redo, clearHistory } from '@/lib/canvas/CommandHisto
 import { saveDrawing, deleteDrawing, updateDrawing, fetchDrawings, fetchDrawing } from '@/lib/api/drawings-client';
 import { matchScene } from './MockSceneService';
 import { tryLLM } from './LLMClient';
+import { buildObject, buildScene, factoryOutputToCanvasObject } from '@/lib/canvas/ObjectFactory';
 import type { Command, OverwriteCanvasCommand } from './types';
 
 // ── 确认状态 ──
@@ -22,6 +23,16 @@ let pendingOverwrite: OverwriteCanvasCommand | null = null;
 let pendingOverwriteTimer: ReturnType<typeof setTimeout> | null = null;
 
 const CONFIRM_TIMEOUT_MS = 5000;
+
+function getVisibleCenter(store: ReturnType<typeof useCanvasStore.getState>) {
+  const vp = store.viewport;
+  const w = typeof window !== 'undefined' ? window.innerWidth : 1200;
+  const h = typeof window !== 'undefined' ? window.innerHeight : 720;
+  return {
+    x: (w / 2 - vp.x) / (vp.scale || 1),
+    y: (h / 2 - vp.y) / (vp.scale || 1)
+  };
+}
 
 // ── 语音控制命令 ──
 const PAUSE_PHRASES = ['停止监听', '结束讲话', '暂停语音', '退出语音模式', '暂停'];
@@ -64,6 +75,7 @@ export function setCurrentDrawingId(id: string | null) { currentDrawingId = id; 
 export async function processInput(rawText: string): Promise<string> {
   const voiceStore = useVoiceStore.getState();
   const normalized = normalize(rawText);
+  console.log('[pipeline] raw:', rawText, '→ normalized:', normalized);
 
   // ── 语音暂停命令（优先级最高）──
   if (isPauseCommand(rawText)) {
@@ -132,21 +144,38 @@ export async function processInput(rawText: string): Promise<string> {
     return '已取消删除操作';
   }
 
-  // ── Mock 场景优先 ──
-  const mockObjects = await matchScene(normalized);
-  if (mockObjects) {
-    const before = [...useCanvasStore.getState().objects];
-    const canvasStore = useCanvasStore.getState();
-    for (const obj of mockObjects) canvasStore.addObject(obj);
-    const after = [...useCanvasStore.getState().objects];
-    pushHistory('mock_batch', rawText, before, after);
-    voiceStore.setStatus('executing');
-    return `已绘制：${mockObjects.length} 个元素`;
+  // ── Mock 场景：仅在用户明确要求"简单图形/示意图/简笔画"，或对象不属于复杂对象时介入 ──
+  // "画一棵树/画一个房子"默认走原生绘制 DRAW_OBJECT，"用简单图形画房子"才走几何拼接
+  const wantsSimpleShape = SIMPLE_SHAPE_TRIGGERS.test(rawText);
+  const wantsNativeDraw = shouldUseNativeDraw(rawText);
+  if (wantsSimpleShape || !wantsNativeDraw) {
+    const sceneMatch = await matchScene(normalized);
+    if (sceneMatch) {
+      const { objects: mockObjects, sceneName } = sceneMatch;
+      const before = [...useCanvasStore.getState().objects];
+      const canvasStore = useCanvasStore.getState();
+      for (const obj of mockObjects) canvasStore.addObject(obj);
+      const after = [...useCanvasStore.getState().objects];
+      pushHistory('mock_batch', rawText, before, after);
+      voiceStore.setStatus('executing');
+
+      const sceneLabels: Record<string, string> = {
+        tree: '树', house: '房子', sun: '太阳', smile: '笑脸',
+        cloud: '云', flower: '花', grass: '草地', mountain: '山',
+        snowman: '雪人', heart: '爱心', rainbow: '彩虹',
+        'christmas-tree': '圣诞树', taichi: '太极图',
+        'traffic-light': '红绿灯', 'sun-and-trees': '太阳和树', garden: '花园'
+      };
+      const label = sceneLabels[sceneName] || sceneName;
+      console.log('[pipeline] mock scene matched:', sceneName, 'wantsSimpleShape:', wantsSimpleShape);
+      return `已识别：${rawText}，使用预置场景：${label}（${mockObjects.length} 个元素）`;
+    }
   }
 
   // ── PROJECT_* 作品管理 ──
-  const { type } = parse(normalized);
-  if (type.startsWith('PROJECT_')) {
+  const cmd = parse(normalized);
+  console.log('[pipeline] parsed command type:', cmd.type);
+  if (cmd.type.startsWith('PROJECT_')) {
     const result = await handleProject(normalized);
     voiceStore.setStatus('executing');
     return result;
@@ -160,10 +189,10 @@ export async function processInput(rawText: string): Promise<string> {
     const results: string[] = [];
 
     for (const part of parts) {
-      const cmd = parse(part);
-      if (validate(cmd) && cmd.type !== 'UNKNOWN') {
-        if (cmd.type === 'CREATE') (cmd as any).batchId = batchId;
-        const msg = executeCommand(cmd);
+      const partCmd = parse(part);
+      if (validate(partCmd) && partCmd.type !== 'UNKNOWN') {
+        if (partCmd.type === 'CREATE') (partCmd as any).batchId = batchId;
+        const msg = executeCommand(partCmd);
         results.push(msg);
       } else {
         results.push(`"${part}" 无法解析`);
@@ -176,12 +205,159 @@ export async function processInput(rawText: string): Promise<string> {
     return results.join('；');
   }
 
+  // ── DRAW_OBJECT：原生绘制复杂对象 ──
+  if (cmd.type === 'DRAW_OBJECT') {
+    voiceStore.setStatus('executing');
+    const objData = buildObject(cmd.objectKind);
+    if (!objData) {
+      voiceStore.setStatus('executing');
+      return `暂不支持绘制"${cmd.objectKind}"，请尝试其他对象`;
+    }
+    const before = [...useCanvasStore.getState().objects];
+    const store = useCanvasStore.getState();
+    const center = getVisibleCenter(store);
+    const offset = store.objects.length * 14;
+    const sizeMultiplier = cmd.size === 'large' ? 1.4 : cmd.size === 'small' ? 0.65 : 1.0;
+    const id = `draw_${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`;
+    const obj = factoryOutputToCanvasObject(
+      objData, id, 0,
+      center.x + offset,
+      center.y + offset
+    );
+    obj.scaleX = sizeMultiplier;
+    obj.scaleY = sizeMultiplier;
+    obj.x = center.x + offset - (objData.width * sizeMultiplier) / 2;
+    obj.y = center.y + offset - (objData.height * sizeMultiplier) / 2;
+    const added = store.addObject(obj);
+    store.selectObject(added.id);
+    const after = [...useCanvasStore.getState().objects];
+    pushHistory(`draw_obj_${added.id}`, rawText, before, after);
+    console.log('[pipeline] DRAW_OBJECT:', cmd.objectKind, '→ id:', added.id, 'size:', sizeMultiplier);
+    return `已绘制${objData.name} #${added.number}`;
+  }
+
+  // ── DRAW_SCENE：原生绘制场景（分多个对象）──
+  if (cmd.type === 'DRAW_SCENE') {
+    voiceStore.setStatus('executing');
+    const sceneObjects = buildScene(cmd.sceneKind);
+    if (!sceneObjects || sceneObjects.length === 0) {
+      voiceStore.setStatus('executing');
+      return `暂不支持绘制场景"${cmd.sceneKind}"，请尝试其他场景`;
+    }
+    const before = [...useCanvasStore.getState().objects];
+    const store = useCanvasStore.getState();
+    const center = getVisibleCenter(store);
+    const results: string[] = [];
+    let totalOffset = 0;
+
+    for (const sceneObj of sceneObjects) {
+      const id = `scene_${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`;
+      const obj = factoryOutputToCanvasObject(
+        sceneObj, id, 0,
+        center.x + totalOffset + sceneObj.width / 2,
+        center.y
+      );
+      const added = store.addObject(obj);
+      totalOffset += sceneObj.width + 20;
+      results.push(sceneObj.name);
+    }
+    const after = [...useCanvasStore.getState().objects];
+    pushHistory(`draw_scene_${cmd.sceneKind}`, rawText, before, after);
+    console.log('[pipeline] DRAW_SCENE:', cmd.sceneKind, '→', results.length, 'objects');
+    return `已绘制场景：${results.join('、')}`;
+  }
+
+  // ── IMAGE_GENERATE：AI 生成真实图像，失败时回退到原生绘制 ──
+  if (cmd.type === 'IMAGE_GENERATE') {
+    voiceStore.setStatus('processing');
+    console.log('[pipeline] IMAGE_GENERATE prompt:', cmd.prompt, 'style:', cmd.style);
+
+    const fallbackKind: string | undefined = (cmd as any)._fallbackObjectKind;
+
+    const addImageObject = (imageSrc: string) => {
+      const store = useCanvasStore.getState();
+      const center = getVisibleCenter(store);
+      const offset = store.objects.length * 14;
+      const imgObj = {
+        id: `img_${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`,
+        number: 0, index: 0,
+        name: cmd.prompt.slice(0, 20), createdAt: Date.now(),
+        shape: 'image' as const,
+        x: center.x + offset - 160, y: center.y + offset - 160,
+        width: cmd.size?.width || 320, height: cmd.size?.height || 320,
+        fill: 'transparent', stroke: '#111827', strokeWidth: 0,
+        opacity: 1, rotation: 0, scaleX: 1, scaleY: 1,
+        imageSrc, prompt: cmd.prompt
+      };
+      const before = [...store.objects];
+      const added = store.addObject(imgObj);
+      store.selectObject(added.id);
+      pushHistory(`img_${added.id}`, rawText, before, [...useCanvasStore.getState().objects]);
+      console.log('[pipeline] image inserted:', added.id, 'src:', imageSrc.slice(0, 80));
+      return added;
+    };
+
+    // 回退到原生绘制
+    const tryFallbackDraw = (reason: string): string => {
+      if (!fallbackKind) {
+        return reason || '图像生成失败且无原生绘制回退，请配置 IMAGE_API_KEY 或说"用简单图形画"';
+      }
+      const objData = buildObject(fallbackKind);
+      if (!objData) return reason || `图像生成失败，"${fallbackKind}"也暂不支持原生绘制`;
+
+      const store = useCanvasStore.getState();
+      const center = getVisibleCenter(store);
+      const offset = store.objects.length * 14;
+      const id = `draw_${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`;
+      const obj = factoryOutputToCanvasObject(objData, id, 0, center.x + offset, center.y + offset);
+      const before = [...store.objects];
+      const added = store.addObject(obj);
+      store.selectObject(added.id);
+      pushHistory(`draw_fb_${added.id}`, rawText, before, [...useCanvasStore.getState().objects]);
+      console.log('[pipeline] IMAGE_GENERATE failed, fallback DRAW_OBJECT:', fallbackKind);
+      return `已绘制${objData.name} #${added.number}（AI 图像生成失败：${reason}）`;
+    };
+
+    try {
+      const res = await fetch('/api/image/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          prompt: cmd.prompt,
+          style: cmd.style || 'realistic',
+          width: cmd.size?.width || 512,
+          height: cmd.size?.height || 512
+        })
+      });
+      const json = await res.json().catch(() => ({}));
+      console.log('[pipeline] image API status:', res.status);
+
+      if (!res.ok) {
+        voiceStore.setStatus('executing');
+        const reason = json.error || `服务返回 ${res.status}`;
+        return tryFallbackDraw(reason);
+      }
+
+      if (!json.imageUrl) {
+        voiceStore.setStatus('executing');
+        return tryFallbackDraw('服务未返回图像地址');
+      }
+
+      addImageObject(json.imageUrl);
+      voiceStore.setStatus('executing');
+      return `已生成真实图像：${cmd.prompt.slice(0, 30)}`;
+    } catch (err) {
+      const message = err instanceof Error ? err.message : '网络错误';
+      console.error('[pipeline] image generate error:', message);
+      voiceStore.setStatus('executing');
+      return tryFallbackDraw(message);
+    }
+  }
+
   // ── 单指令 ──
-  const cmd = parse(normalized);
   if (!validate(cmd)) {
-    voiceStore.setStatus('error');
-    voiceStore.setAutoRestart(false);
-    return `"${rawText}" → 指令校验未通过`;
+    voiceStore.setStatus('executing');
+    return `"${rawText}" → 指令校验未通过，请再说一遍`;
   }
 
   if (cmd.type === 'UNKNOWN') {
@@ -205,7 +381,7 @@ export async function processInput(rawText: string): Promise<string> {
       return result;
     }
     voiceStore.setStatus('executing');
-    return `"${rawText}" → 暂不支持该指令，请改用基础指令`;
+    return `已识别："${rawText}"，但暂不支持该指令`;
   }
 
   // CLEAR → 进入确认等待

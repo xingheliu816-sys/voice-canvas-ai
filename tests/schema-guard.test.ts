@@ -30,6 +30,22 @@ describe('SchemaGuard', () => {
     expect(validate({ type: 'CLEAR' })).toBe(true);
   });
 
+  it('合法 IMAGE_GENERATE', () => {
+    expect(validate({ type: 'IMAGE_GENERATE', prompt: 'a tree' })).toBe(true);
+  });
+
+  it('非法 IMAGE_GENERATE（空 prompt）', () => {
+    expect(validate({ type: 'IMAGE_GENERATE', prompt: '' } as any)).toBe(false);
+  });
+
+  it('合法 PROJECT_SAVE', () => {
+    expect(validate({ type: 'PROJECT_SAVE' })).toBe(true);
+  });
+
+  it('合法 PROJECT_SAVE_AS', () => {
+    expect(validate({ type: 'PROJECT_SAVE_AS', title: 'test' })).toBe(true);
+  });
+
   it('CREATE 缺少 x/y', () => {
     expect(validate({ type: 'CREATE', id: 'x', shape: 'circle', width: 100, height: 100 } as any)).toBe(false);
   });

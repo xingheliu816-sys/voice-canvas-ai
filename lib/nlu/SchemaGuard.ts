@@ -1,15 +1,13 @@
 import { COMMAND_WHITELIST } from './types';
 import type { Command, CreateCommand } from './types';
 
-const VALID_SHAPES = ['circle','rect','triangle','line','text','polygon'];
+const VALID_SHAPES = ['circle', 'rect', 'triangle', 'line', 'text', 'polygon', 'image', 'group'];
 
 export function validate(command: Command): boolean {
-  // 白名单校验
   if (!COMMAND_WHITELIST.includes(command.type as typeof COMMAND_WHITELIST[number])) {
     return false;
   }
 
-  // Schema 校验
   switch (command.type) {
     case 'CREATE': {
       const c = command as CreateCommand;
@@ -29,6 +27,24 @@ export function validate(command: Command): boolean {
       return command.target === 'next' || command.target === 'prev' || typeof (command.target as any)?.id === 'string' || typeof (command.target as any)?.index === 'number';
     case 'CANVAS_RENAME':
       return !!command.name?.trim() && (command.target === 'current' || typeof (command.target as any)?.id === 'string');
+    case 'CANVAS_PAN':
+      return typeof command.delta?.x === 'number' && typeof command.delta?.y === 'number';
+    case 'CANVAS_ZOOM':
+      return (
+        (typeof command.scaleDelta === 'number' && Number.isFinite(command.scaleDelta)) ||
+        (typeof command.scaleTo === 'number' && command.scaleTo > 0)
+      );
+    case 'CANVAS_BACKGROUND':
+    case 'CANVAS_SET_BACKGROUND':
+      return typeof command.color === 'string' && command.color.length > 0;
+    case 'IMAGE_GENERATE':
+      return typeof command.prompt === 'string' && command.prompt.length > 0;
+    case 'DRAW_OBJECT':
+      return typeof command.objectKind === 'string' && command.objectKind.length > 0;
+    case 'DRAW_SCENE':
+      return typeof command.sceneKind === 'string' && command.sceneKind.length > 0;
+    case 'MOVE':
+      return !!command.target;
     case 'UNKNOWN':
       return false;
     default:
