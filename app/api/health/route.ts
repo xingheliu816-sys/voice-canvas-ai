@@ -16,8 +16,8 @@ export async function GET() {
   return Response.json({
     status: dbOk ? 'ok' : 'degraded',
     asr: 'web-speech',
-    nlu: 'rule-first',
-    llm: process.env.ANTHROPIC_API_KEY ? 'enabled' : 'optional',
+    nlu: 'rule-first-deepseek-fallback',
+    llm: process.env.DEEPSEEK_API_KEY || process.env.ANTHROPIC_API_KEY ? 'enabled' : 'optional',
     storage: dbOk ? 'sqlite' : 'unavailable',
     version: '0.1.0'
   });
