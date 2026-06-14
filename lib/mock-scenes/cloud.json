@@ -1,0 +1,39 @@
+{
+  "name": "cloud",
+  "keywords": [
+    "画云","画一朵云","画个云","云朵","白云","一朵云","画云朵",
+    "来一朵云","加一朵云","画云彩","云彩","云"
+  ],
+  "objects": [
+    {
+      "id":"cl_c1","name":"云朵1","shape":"circle",
+      "x":340,"y":250,"width":100,"height":100,
+      "fill":"#FFFFFF","stroke":"#E2E8F0","strokeWidth":2,"opacity":0.95,
+      "rotation":0,"scaleX":1,"scaleY":1
+    },
+    {
+      "id":"cl_c2","name":"云朵2","shape":"circle",
+      "x":420,"y":235,"width":120,"height":120,
+      "fill":"#FFFFFF","stroke":"#E2E8F0","strokeWidth":2,"opacity":0.95,
+      "rotation":0,"scaleX":1,"scaleY":1
+    },
+    {
+      "id":"cl_c3","name":"云朵3","shape":"circle",
+      "x":490,"y":255,"width":90,"height":90,
+      "fill":"#FFFFFF","stroke":"#E2E8F0","strokeWidth":2,"opacity":0.95,
+      "rotation":0,"scaleX":1,"scaleY":1
+    },
+    {
+      "id":"cl_c4","name":"云朵4","shape":"circle",
+      "x":370,"y":220,"width":80,"height":80,
+      "fill":"#F8FAFC","stroke":"#E2E8F0","strokeWidth":1,"opacity":0.9,
+      "rotation":0,"scaleX":1,"scaleY":1
+    },
+    {
+      "id":"cl_c5","name":"云朵底","shape":"circle",
+      "x":420,"y":275,"width":130,"height":70,
+      "fill":"#FFFFFF","stroke":"#E2E8F0","strokeWidth":2,"opacity":0.95,
+      "rotation":0,"scaleX":1,"scaleY":1
+    }
+  ]
+}

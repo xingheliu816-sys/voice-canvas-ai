@@ -1,0 +1,57 @@
+{
+  "name": "grass",
+  "keywords": [
+    "画草","画草地","草地","小草","画小草","青草",
+    "来一片草地","加草地","草"
+  ],
+  "objects": [
+    {
+      "id":"gr_base","name":"草地","shape":"rect",
+      "x":100,"y":400,"width":600,"height":60,
+      "fill":"#7CFC00","stroke":"#32CD32","strokeWidth":2,"opacity":0.8,
+      "rotation":0,"scaleX":1,"scaleY":1
+    },
+    {
+      "id":"gr_blade1","name":"草叶1","shape":"triangle",
+      "x":180,"y":390,"width":8,"height":25,
+      "fill":"#22C55E","stroke":"#16A34A","strokeWidth":1,"opacity":0.9,
+      "rotation":0,"scaleX":1,"scaleY":1
+    },
+    {
+      "id":"gr_blade2","name":"草叶2","shape":"triangle",
+      "x":250,"y":388,"width":8,"height":28,
+      "fill":"#16A34A","stroke":"#15803D","strokeWidth":1,"opacity":0.9,
+      "rotation":0,"scaleX":1,"scaleY":1
+    },
+    {
+      "id":"gr_blade3","name":"草叶3","shape":"triangle",
+      "x":320,"y":392,"width":8,"height":22,
+      "fill":"#4ADE80","stroke":"#22C55E","strokeWidth":1,"opacity":0.9,
+      "rotation":0,"scaleX":1,"scaleY":1
+    },
+    {
+      "id":"gr_blade4","name":"草叶4","shape":"triangle",
+      "x":400,"y":385,"width":8,"height":30,
+      "fill":"#22C55E","stroke":"#16A34A","strokeWidth":1,"opacity":0.9,
+      "rotation":0,"scaleX":1,"scaleY":1
+    },
+    {
+      "id":"gr_blade5","name":"草叶5","shape":"triangle",
+      "x":470,"y":390,"width":8,"height":26,
+      "fill":"#16A34A","stroke":"#15803D","strokeWidth":1,"opacity":0.9,
+      "rotation":0,"scaleX":1,"scaleY":1
+    },
+    {
+      "id":"gr_blade6","name":"草叶6","shape":"triangle",
+      "x":550,"y":388,"width":8,"height":24,
+      "fill":"#4ADE80","stroke":"#22C55E","strokeWidth":1,"opacity":0.9,
+      "rotation":0,"scaleX":1,"scaleY":1
+    },
+    {
+      "id":"gr_blade7","name":"草叶7","shape":"triangle",
+      "x":620,"y":392,"width":8,"height":27,
+      "fill":"#22C55E","stroke":"#16A34A","strokeWidth":1,"opacity":0.9,
+      "rotation":0,"scaleX":1,"scaleY":1
+    }
+  ]
+}

@@ -1,0 +1,34 @@
+{
+  "name": "tree",
+  "keywords": [
+    "画树","画一棵树","画个树","一棵树","树木","小树","大树","绿树","树苗",
+    "来一棵树","加一棵树","弄一棵树","画颗树","一棵树","树",
+    "画数","化树","话术","画术"
+  ],
+  "objects": [
+    {
+      "id":"tr_trunk","name":"树干","shape":"rect",
+      "x":400,"y":350,"width":40,"height":100,
+      "fill":"#8B5A2B","stroke":"#5C3A1A","strokeWidth":2,"opacity":1,
+      "rotation":0,"scaleX":1,"scaleY":1
+    },
+    {
+      "id":"tr_crown1","name":"树冠上","shape":"circle",
+      "x":400,"y":250,"width":140,"height":140,
+      "fill":"#22C55E","stroke":"#15803D","strokeWidth":2,"opacity":1,
+      "rotation":0,"scaleX":1,"scaleY":1
+    },
+    {
+      "id":"tr_crown2","name":"树冠左","shape":"circle",
+      "x":340,"y":280,"width":110,"height":110,
+      "fill":"#16A34A","stroke":"#15803D","strokeWidth":1,"opacity":0.9,
+      "rotation":0,"scaleX":1,"scaleY":1
+    },
+    {
+      "id":"tr_crown3","name":"树冠右","shape":"circle",
+      "x":460,"y":280,"width":110,"height":110,
+      "fill":"#16A34A","stroke":"#15803D","strokeWidth":1,"opacity":0.9,
+      "rotation":0,"scaleX":1,"scaleY":1
+    }
+  ]
+}
