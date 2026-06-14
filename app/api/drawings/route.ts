@@ -37,7 +37,7 @@ export async function POST(req: Request) {
   const db = getDB();
   db.prepare(
     'INSERT INTO drawings (id, user_id, title, canvas_json, thumbnail_url, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)'
-  ).run(id, user.userId, title, canvasJson, `/thumbnails/${id}.png`, now, now);
+  ).run(id, user.userId, title, canvasJson, `/api/files/thumbnails/${id}.png`, now, now);
 
   return Response.json({ id, title, updatedAt: now }, { status: 201 });
 }
