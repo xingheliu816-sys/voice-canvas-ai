@@ -2,11 +2,18 @@
 
 import { useState, useEffect, useCallback } from 'react';
 
+let triggerHelpOverlay: (() => void) | null = null;
+
+/** 从画布控件或键盘快捷键触发帮助面板 */
+export function triggerHelp() {
+  triggerHelpOverlay?.();
+}
+
 const HELP_SECTIONS = [
   {
     title: '基础绘图',
     icon: 'M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z',
-    items: ['画一个红色的圆', '画个蓝色矩形', '在左上角画绿三角', '画一条直线', '写你好'],
+    items: ['画一个红色的圆', '画个蓝色矩形', '来一棵树', '画一个房子', '画太阳', '画笑脸'],
   },
   {
     title: '样式与位置',
@@ -26,7 +33,7 @@ const HELP_SECTIONS = [
   {
     title: '复杂场景',
     icon: 'M12 3v18M3 12h18',
-    items: ['画房子', '画笑脸', '画田园风光', '画雪人', '画彩虹', '画圣诞树', '画太极图'],
+    items: ['画一棵树', '画房子', '画太阳', '画笑脸', '画一朵云', '画花', '画草地', '画山', '画雪人', '画彩虹'],
   },
   {
     title: '作品管理',
@@ -37,6 +44,11 @@ const HELP_SECTIONS = [
 
 export default function HelpOverlay() {
   const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    triggerHelpOverlay = () => setOpen(true);
+    return () => { triggerHelpOverlay = null; };
+  }, []);
 
   const handleKey = useCallback((e: KeyboardEvent) => {
     if (e.key === 'Escape') setOpen(false);
@@ -50,16 +62,6 @@ export default function HelpOverlay() {
 
   return (
     <>
-      {/* Trigger button */}
-      <button
-        onClick={() => setOpen(!open)}
-        className="fixed bottom-20 right-6 z-50 w-9 h-9 rounded-full glass-light flex items-center justify-center text-warm-muted hover:text-warm-light hover:border-white/15 transition-all duration-200 text-sm font-medium"
-        title="指令帮助 (按 ? 键)"
-      >
-        ?
-      </button>
-
-      {/* Overlay */}
       {open && (
         <div
           className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex items-start justify-center pt-16 animate-fade-in"
@@ -124,3 +126,4 @@ export default function HelpOverlay() {
     </>
   );
 }
+

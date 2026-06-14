@@ -3,21 +3,49 @@
 import { useState, useEffect } from 'react';
 import DraggableFloating from './DraggableFloating';
 
-interface LogEntry {
+export interface LogEntry {
   id: string;
   text: string;
+  normalized?: string;
   result: string;
+  status: 'success' | 'fail' | 'unknown' | 'mock';
   time: number;
 }
 
 let commandLogs: LogEntry[] = [];
 let listeners: (() => void)[] = [];
 
-export function addCommandLog(text: string, result: string) {
-  commandLogs = [{ id: Date.now().toString(), text, result, time: Date.now() }, ...commandLogs].slice(0, 50);
+export function addCommandLog(
+  text: string,
+  result: string,
+  options?: { normalized?: string; status?: LogEntry['status'] }
+) {
+  const status: LogEntry['status'] = options?.status ||
+    (result.includes('预置场景') || result.includes('已绘制') ? 'mock' :
+     result.includes('已') || result.includes('画布') ? 'success' :
+     result.includes('暂不支持') || result.includes('无法') ? 'fail' : 'unknown');
+
+  commandLogs = [
+    {
+      id: Date.now().toString(),
+      text,
+      normalized: options?.normalized || text,
+      result,
+      status,
+      time: Date.now()
+    },
+    ...commandLogs
+  ].slice(0, 50);
   listeners.forEach((l) => l());
   return result;
 }
+
+const STATUS_TAGS: Record<LogEntry['status'], { label: string; className: string }> = {
+  success: { label: '成功', className: 'bg-accent-emerald/20 text-accent-emerald' },
+  fail: { label: '失败', className: 'bg-red-400/20 text-red-400' },
+  unknown: { label: '未知', className: 'bg-accent-amber/20 text-accent-amber' },
+  mock: { label: 'Mock', className: 'bg-accent-primary/20 text-accent-primary' },
+};
 
 export default function CommandLogPanel() {
   const [open, setOpen] = useState(false);
@@ -28,6 +56,9 @@ export default function CommandLogPanel() {
     listeners.push(fn);
     return () => { listeners = listeners.filter((l) => l !== fn); };
   }, []);
+
+  // 最近 5 条记录
+  const recentLogs = logs.slice(0, 5);
 
   return (
     <>
@@ -46,7 +77,7 @@ export default function CommandLogPanel() {
             <polyline points="3 12 21 12" />
             <polyline points="7 8 3 12 7 16" />
           </svg>
-          <span>历史</span>
+          <span>指令记录</span>
           {logs.length > 0 && (
             <span className="bg-accent-primary/20 text-accent-primary text-[10px] px-1.5 py-0.5 rounded-full font-semibold min-w-[18px] text-center">
               {logs.length}
@@ -76,9 +107,9 @@ export default function CommandLogPanel() {
             {/* Header */}
             <div className="flex items-center justify-between px-5 py-4 border-b border-white/6">
               <div>
-                <h2 className="font-display font-semibold text-warm-light">指令历史</h2>
+                <h2 className="font-display font-semibold text-warm-light">语音指令记录</h2>
                 <p className="text-[10px] text-warm-muted mt-0.5 font-mono">
-                  最近 {logs.length} 条记录
+                  最近 {recentLogs.length} 条 · 共 {logs.length} 条
                 </p>
               </div>
               <button
@@ -92,6 +123,18 @@ export default function CommandLogPanel() {
               </button>
             </div>
 
+            {/* Voice tips */}
+            <div className="px-4 py-3 border-b border-white/5 bg-surface-elevated/30">
+              <p className="text-[10px] text-warm-muted leading-relaxed">
+                请使用<strong className="text-warm-light">普通话</strong>靠近麦克风说话。
+                推荐说法：
+                <span className="text-accent-primary">画一个红色圆形</span>、
+                <span className="text-accent-primary">画一棵树</span>、
+                <span className="text-accent-primary">画一个房子</span>。
+                识别错误时直接再说一遍即可。
+              </p>
+            </div>
+
             {/* Logs */}
             <div className="flex-1 overflow-y-auto p-3 space-y-1.5">
               {logs.length === 0 && (
@@ -101,25 +144,43 @@ export default function CommandLogPanel() {
                     <path d="M5 11a7 7 0 0 0 14 0" />
                   </svg>
                   <p className="text-xs">还没有语音指令</p>
-                  <p className="text-[10px] opacity-60">点击右上角麦克风开始</p>
+                  <p className="text-[10px] opacity-60">点击右下角麦克风开始</p>
                 </div>
               )}
 
               {logs.map((l, i) => (
                 <div
                   key={l.id}
-                  className="p-3 rounded-xl bg-surface-elevated/60 border border-white/5 hover:border-white/10 transition-all duration-150 animate-slide-up"
+                  className="p-2.5 rounded-xl bg-surface-elevated/60 border border-white/5 hover:border-white/10 transition-all duration-150 animate-slide-up"
                   style={{ animationDelay: `${Math.min(i, 10) * 40}ms` }}
                 >
                   <div className="flex items-center gap-2 mb-1">
                     <span className="text-[10px] font-mono text-warm-dark">
                       {new Date(l.time).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
                     </span>
+                    <span className={`text-[9px] px-1.5 py-0.5 rounded-full font-semibold ${STATUS_TAGS[l.status].className}`}>
+                      {STATUS_TAGS[l.status].label}
+                    </span>
                   </div>
+
+                  {/* 原始识别文本 */}
                   <p className="text-xs text-warm-light font-medium leading-relaxed">
-                    &ldquo;{l.text}&rdquo;
+                    识别：&ldquo;{l.text}&rdquo;
                   </p>
-                  <p className="text-[11px] text-warm-muted mt-1 leading-relaxed">
+
+                  {/* 归一化文本（如果和原始不同） */}
+                  {l.normalized && l.normalized !== l.text && (
+                    <p className="text-[10px] text-accent-amber/80 mt-0.5 font-mono">
+                      归一化：{l.normalized}
+                    </p>
+                  )}
+
+                  {/* 解析结果 */}
+                  <p className={`text-[11px] mt-1 leading-relaxed ${
+                    l.status === 'fail' ? 'text-red-300/80' :
+                    l.status === 'mock' ? 'text-accent-primary/80' :
+                    'text-warm-muted'
+                  }`}>
                     {l.result}
                   </p>
                 </div>
@@ -129,7 +190,7 @@ export default function CommandLogPanel() {
             {/* Footer hint */}
             <div className="px-5 py-3 border-t border-white/6">
               <p className="text-[10px] text-warm-dark text-center">
-                点击面板外关闭 · 最多保留 50 条
+                点击面板外关闭 · 最多保留 50 条 · 支持语音提示
               </p>
             </div>
           </div>

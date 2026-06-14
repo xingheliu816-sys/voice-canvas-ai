@@ -5,7 +5,6 @@ const SpeechRecognitionAPI =
 
 export interface SpeechCallbacks {
   onInterim: (text: string) => void;
-  /** 返回 true 表示处理完毕后自动重启监听 */
   onFinal: (text: string) => Promise<boolean>;
   onError: (error: string) => void;
   onEnd: () => void;
@@ -17,7 +16,7 @@ export function createSpeechRecognizer(lang = 'zh-CN') {
   recognition.lang = lang;
   recognition.interimResults = true;
   recognition.continuous = false;
-  recognition.maxAlternatives = 1;
+  recognition.maxAlternatives = 3;
   return recognition;
 }
 
