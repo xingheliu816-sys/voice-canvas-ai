@@ -2,15 +2,18 @@ import { createSpeechRecognizer, isBrowserSupported } from './SpeechRecognizer';
 import type { SpeechCallbacks } from './SpeechRecognizer';
 
 export interface MicOptions {
-  /** 静音多少 ms 后自动结束本轮识别，默认 2000 */
+  /** 静音多少 ms 后自动结束本轮识别，默认 600 */
   silenceMs?: number;
   /** 单条指令最长时长 ms，默认 15000 */
   maxDurationMs?: number;
-  /** 执行完毕后多少 ms 后自动重启监听，默认 600 */
+  /** 执行完毕后多少 ms 后自动重启监听，默认 150 */
   autoRestartMs?: number;
   /** 是否打印诊断日志，默认 true（dev 阶段） */
   debug?: boolean;
 }
+
+const SILENCE_END_MS = 1200;
+const STATUS_MESSAGE_DURATION_MS = 1000;
 
 export class MicController {
   private recognition: SpeechRecognition | null = null;
@@ -24,14 +27,17 @@ export class MicController {
   private debug: boolean;
   private _paused = false;
   private _active = false;
-  /** 单轮识别的累计 final 文本，避免闭包陷阱 */
+  private _running = false;
+  /** 单轮识别的累计 final 文本 */
   private currentFinalText = '';
+  /** 最后一次 interim 文本，用于 final 为空时的兜底 */
+  private lastInterimText = '';
 
   constructor(callbacks: SpeechCallbacks, options: MicOptions = {}) {
     this.callbacks = callbacks;
-    this.silenceMs = options.silenceMs ?? 2000;
+    this.silenceMs = options.silenceMs ?? SILENCE_END_MS;
     this.maxDurationMs = options.maxDurationMs ?? 15000;
-    this.autoRestartMs = options.autoRestartMs ?? 600;
+    this.autoRestartMs = options.autoRestartMs ?? 150;
     this.debug = options.debug ?? true;
   }
 
@@ -51,12 +57,16 @@ export class MicController {
       this.log('start() skipped: already active');
       return;
     }
+    if (this._running) {
+      this.log('start() skipped: recognition running');
+      return;
+    }
     if (!isBrowserSupported()) {
       this.callbacks.onError('浏览器不支持语音识别，请使用 Chrome 或 Edge');
       return;
     }
 
-    // 关键：取消正在播放的 TTS，避免 TTS 声音被麦克风捕获造成反馈环
+    // 取消正在播放的 TTS，避免 TTS 声音被麦克风捕获造成反馈环
     if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
       window.speechSynthesis.cancel();
     }
@@ -75,8 +85,9 @@ export class MicController {
       return;
     }
 
-    // 重置每轮 final 缓冲
+    // 重置每轮缓冲
     this.currentFinalText = '';
+    this.lastInterimText = '';
 
     (this.recognition as any).onstart = () => {
       this.log('recognition.onstart — listening');
@@ -94,9 +105,10 @@ export class MicController {
           interim += t;
         }
       }
-      // 任何识别结果（interim 或 final）都重置静音计时
+      // 任何识别结果都重置静音计时
       this.resetSilence();
       if (interim) {
+        this.lastInterimText = interim;
         this.callbacks.onInterim(interim);
       }
     };
@@ -105,45 +117,50 @@ export class MicController {
       this.log('onerror:', e.error, (e as any).message);
       // aborted 是 stop()/abort() 主动触发，忽略
       if (e.error === 'aborted') return;
-      // no-speech 是常见的"用户没说话"，提示用户但不阻断
+      // no-speech：没有检测到声音，静默等待自动重启，不提示
       if (e.error === 'no-speech') {
-        this.callbacks.onInterim('（没听到内容，请再试一次）');
         return;
       }
       if (e.error === 'not-allowed' || e.error === 'service-not-allowed') {
-        this.callbacks.onError('麦克风权限被拒绝或服务不可用，请检查浏览器设置');
+        this._paused = true; // 硬错误，阻止自动重启
+        this.callbacks.onError('麦克风权限未开启，请在浏览器中允许麦克风');
         return;
       }
       if (e.error === 'audio-capture') {
-        this.callbacks.onError('无法访问麦克风设备，请检查麦克风是否已连接');
+        this._paused = true; // 硬错误，阻止自动重启
+        this.callbacks.onError('未检测到可用麦克风');
         return;
       }
       if (e.error === 'network') {
-        this.callbacks.onError('网络错误：语音识别需要联网（Chrome 使用云端识别）');
+        // 网络错误：短暂提示但不锁死，让 onend 自动重启
+        this.callbacks.onInterim('语音识别网络异常，正在重试');
         return;
       }
-      this.callbacks.onError(`识别错误：${e.error}`);
+      // 其他未知错误
+      this.callbacks.onError(`语音识别异常（${e.error}），正在重试`);
     };
 
     this.recognition.onend = async () => {
-      this.log('recognition.onend — finalText:', JSON.stringify(this.currentFinalText));
+      this.log('recognition.onend — finalText:', JSON.stringify(this.currentFinalText), 'lastInterim:', JSON.stringify(this.lastInterimText));
       this._active = false;
+      this._running = false;
       this.clearTimers();
 
-      const finalText = this.currentFinalText.trim();
+      // final 文本优先，空则用最后一次 interim 兜底
+      const finalText = this.currentFinalText.trim() || this.lastInterimText.trim();
       this.currentFinalText = '';
+      this.lastInterimText = '';
 
       if (finalText) {
-        // 有识别结果 → 交给回调，等待是否需要自动重启
-        this.log('-> calling onFinal');
+        this.log('-> calling onFinal with:', JSON.stringify(finalText));
         const shouldRestart = await this.callbacks.onFinal(finalText);
         this.log('-> onFinal returned shouldRestart=', shouldRestart);
         if (shouldRestart && !this._paused) {
           this.scheduleRestart();
         }
       } else {
-        // 无识别结果（用户没说话 / 已 stop）→ 自动重启
-        this.log('-> no final text, auto-restart');
+        // 完全无识别结果：静默自动重启，不提示错误
+        this.log('-> no speech detected, silent auto-restart');
         if (!this._paused) {
           this.scheduleRestart();
         }
@@ -152,16 +169,17 @@ export class MicController {
     };
 
     this._active = true;
+    this._running = true;
     try {
       this.recognition.start();
       this.log('recognition.start() called');
     } catch (err) {
       this.log('recognition.start() threw', err);
       this._active = false;
+      this._running = false;
       this.callbacks.onError(`启动识别失败：${(err as Error).message}`);
       return;
     }
-    this.resetSilence();
     this.startMaxDuration();
   }
 
@@ -211,6 +229,7 @@ export class MicController {
     }
     this.clearTimers();
     this._active = false;
+    this._running = false;
   }
 
   /** 从暂停恢复 */
@@ -231,5 +250,6 @@ export class MicController {
     }
     this.clearTimers();
     this._active = false;
+    this._running = false;
   }
 }

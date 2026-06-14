@@ -1,21 +1,48 @@
 'use client';
 
-import { useCallback, useMemo, useRef } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import { MicController } from '@/lib/voice/MicController';
 import { useVoiceStore } from '@/lib/voice/useVoiceStore';
 import { processInput } from '@/lib/nlu/Pipeline';
+import { normalize } from '@/lib/nlu/Normalizer';
 import { addCommandLog } from '@/components/CommandLog';
-import { speak } from '@/lib/voice/Speaker';
+import type { LogEntry } from '@/components/CommandLog';
 import DraggableFloating from './DraggableFloating';
+
+/** 把执行结果压成画布上方的短提示 */
+function briefResult(result: string): string {
+  if (/^已新增|^已绘制/.test(result)) return '已作图';
+  if (/^已切换/.test(result)) return result;
+  if (/^已删除|^已清空|^已替换|^已修改|^已调整|^已移动|^已旋转/.test(result)) return result;
+  if (/画布缩放/.test(result)) return result;
+  if (/^已/.test(result)) return result;
+  return result;
+}
 
 export default function MicButton() {
   const status = useVoiceStore((s) => s.status);
+  const transcript = useVoiceStore((s) => s.transcript);
+  const finalText = useVoiceStore((s) => s.finalText);
   const setStatus = useVoiceStore((s) => s.setStatus);
   const setTranscript = useVoiceStore((s) => s.setTranscript);
   const setFinalText = useVoiceStore((s) => s.setFinalText);
   const setError = useVoiceStore((s) => s.setError);
   const setAutoRestart = useVoiceStore((s) => s.setAutoRestart);
+  const setTopMessage = useVoiceStore((s) => s.setTopMessage);
   const micRef = useRef<MicController | null>(null);
+  const topMessageTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [showHints, setShowHints] = useState(false);
+
+  const showTopMessage = useCallback(
+    (msg: string, ms = 1000) => {
+      if (topMessageTimerRef.current) clearTimeout(topMessageTimerRef.current);
+      setTopMessage(msg);
+      topMessageTimerRef.current = setTimeout(() => {
+        setTopMessage('');
+      }, ms);
+    },
+    [setTopMessage]
+  );
 
   const startListening = useCallback(() => {
     if (micRef.current?.active) return;
@@ -23,53 +50,67 @@ export default function MicButton() {
     setStatus('listening');
     setTranscript('');
     setFinalText('');
+    setError(null);
     setAutoRestart(true);
 
     micRef.current = new MicController(
       {
         onInterim: (text) => {
-          console.log('[Voice] interim:', text);
           setTranscript(text);
         },
         onFinal: async (text) => {
-          console.log('[Voice] final:', text);
           setFinalText(text);
           setStatus('processing');
+          const normalizedText = normalize(text);
           const result = await processInput(text);
-          console.log('[Voice] processInput result:', result);
           const display = `${text} · ${result}`;
           setFinalText(display);
-          addCommandLog(text, result);
-          speak(result);
 
-          // 检查是否应该自动重启
+          // 判断状态用于日志标记
+          const logStatus: LogEntry['status'] =
+            result.includes('预置场景') || result.includes('已绘制') ? 'mock' :
+            result.includes('已识别') && result.includes('暂不支持') ? 'fail' :
+            result.includes('已') || result.includes('画布') ? 'success' : 'unknown';
+
+          addCommandLog(text, result, { normalized: normalizedText, status: logStatus });
+
+          // 在画布上方显示短暂状态：成功就显示"已作图"，否则显示结果摘要
           const store = useVoiceStore.getState();
-          const shouldRestart = store.autoRestart && !['paused', 'confirming', 'error'].includes(store.status);
+          if (store.status === 'confirming') {
+            showTopMessage(result, 1800);
+          } else if (result && !/未找到|未知|无法|失败|请先|请说/.test(result)) {
+            showTopMessage(briefResult(result), 1000);
+          } else if (result) {
+            showTopMessage(result, 1500);
+          }
+
+          const shouldRestart =
+            store.autoRestart && !['paused', 'confirming'].includes(store.status);
           return shouldRestart;
         },
         onError: (err) => {
-          console.error('[Voice] error:', err);
+          console.warn('[Voice] hard error:', err);
           setError(err);
+          showTopMessage(err, 2000);
         },
         onEnd: () => {
-          console.log('[Voice] onEnd');
           const store = useVoiceStore.getState();
-          if (store.autoRestart && !['paused', 'confirming', 'error'].includes(store.status)) {
-            // 即将自动重启，延迟更新 UI 状态以匹配 autoRestartMs(400)
+          if (store.autoRestart && !['paused', 'confirming'].includes(store.status)) {
+            // 即将自动重启 UI 状态回到 listening
             setTimeout(() => {
               const s = useVoiceStore.getState();
-              if (s.autoRestart && !['paused', 'confirming', 'error'].includes(s.status)) {
+              if (s.autoRestart && !['paused', 'confirming'].includes(s.status)) {
                 s.setStatus('listening');
                 s.setTranscript('');
               }
-            }, 450);
+            }, 160);
           }
-        },
+        }
       },
-      { silenceMs: 1300, maxDurationMs: 15000, autoRestartMs: 400 },
+      { silenceMs: 1200, maxDurationMs: 15000, autoRestartMs: 150 }
     );
     micRef.current.start();
-  }, [setStatus, setTranscript, setFinalText, setError, setAutoRestart]);
+  }, [setStatus, setTranscript, setFinalText, setError, setAutoRestart, showTopMessage]);
 
   const handleResume = useCallback(() => {
     setAutoRestart(true);
@@ -89,11 +130,8 @@ export default function MicButton() {
     setStatus('idle');
   }, [setAutoRestart, setStatus]);
 
-  // 稳定的波形条高度，避免 Math.random() 在每次渲染时抖动
-  const waveHeights = useMemo(
-    () => [0, 1, 2, 3].map(() => 6 + Math.random() * 10),
-    [],
-  );
+  // 稳定波形条高度
+  const waveHeights = useMemo(() => [0, 1, 2, 3].map(() => 6 + Math.random() * 10), []);
 
   // ── 根据 status 渲染不同的内容 ──
 
@@ -179,6 +217,18 @@ export default function MicButton() {
           </span>
         </div>
 
+        {/* 语音转文字实时显示 */}
+        {(transcript || finalText) && (
+          <div className="max-w-[260px] p-2.5 rounded-xl bg-surface-elevated/80 backdrop-blur-xl border border-white/10 text-xs text-warm-light leading-relaxed animate-fade-in">
+            {transcript && status === 'listening' && (
+              <span className="text-warm-muted">{transcript}</span>
+            )}
+            {finalText && (
+              <span className="text-warm-light">{finalText}</span>
+            )}
+          </div>
+        )}
+
         {/* 应急停止按钮 */}
         <button
           onClick={handleStop}
@@ -213,6 +263,8 @@ export default function MicButton() {
       <div className="flex flex-col items-end gap-2 animate-slide-in-right">
         <button
           onClick={startListening}
+          onMouseEnter={() => setShowHints(true)}
+          onMouseLeave={() => setShowHints(false)}
           className="group relative flex items-center gap-3 px-5 py-3 rounded-full font-medium text-sm
             bg-surface-elevated/80 backdrop-blur-xl border border-white/10
             hover:bg-surface-overlay/80 hover:border-white/15
@@ -228,7 +280,24 @@ export default function MicButton() {
           </span>
           <span className="text-sm font-semibold text-warm-light">开始讲话</span>
         </button>
-        <span className="text-xs text-warm-muted pr-2">点击后说出绘图指令</span>
+
+        {/* 语音提示面板 */}
+        <div className={`
+          max-w-[260px] p-3 rounded-xl bg-surface-elevated/90 backdrop-blur-xl border border-white/8
+          text-[10px] text-warm-muted leading-relaxed
+          transition-all duration-200
+          ${showHints ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-1 pointer-events-none absolute'}
+        `}>
+          <p className="mb-1.5 text-warm-light font-medium">语音提示：</p>
+          <ul className="space-y-1">
+            <li>· 请使用<strong className="text-warm-light">普通话</strong>靠近麦克风说话</li>
+            <li>· 推荐：<span className="text-accent-primary">画一个红色圆形</span></li>
+            <li>· 推荐：<span className="text-accent-primary">画一棵树 / 画房子 / 画太阳</span></li>
+            <li>· 识别错误时直接再说一遍即可</li>
+          </ul>
+        </div>
+
+        <span className="text-xs text-warm-muted pr-2">点击麦克风开始，悬停查看提示</span>
       </div>
     );
   }

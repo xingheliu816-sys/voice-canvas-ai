@@ -18,15 +18,15 @@ const STATUS_CONFIG: Record<VoiceStatus, {
     dot: 'bg-warm-dark',
     border: 'border-white/[0.04]',
     glow: '',
-    label: '就绪 — 点击右上角麦克风开始创作',
-    hint: '说"画一个…"来开始',
+    label: '就绪 — 点击右下角麦克风开始绘图',
+    hint: '说"画一个红色圆形"、"画一棵树"等',
   },
   listening: {
     dot: 'bg-accent-primary',
     border: 'border-accent-primary/20',
     glow: 'shadow-[0_-4px_24px_rgba(255,92,60,0.1)]',
     label: '正在聆听你的声音…',
-    hint: '说出你的绘图指令',
+    hint: '请用普通话说出绘图指令',
   },
   processing: {
     dot: 'bg-accent-amber',
@@ -61,7 +61,7 @@ const STATUS_CONFIG: Record<VoiceStatus, {
     border: 'border-red-400/20',
     glow: 'shadow-[0_-4px_24px_rgba(248,113,113,0.1)]',
     label: '出现错误',
-    hint: '点击"重新开始"重试',
+    hint: '请点击麦克风按钮重试',
   },
 };
 
@@ -70,7 +70,7 @@ export default function StatusBar({ text, status = 'idle' }: StatusBarProps) {
 
   return (
     <div className={`
-      fixed bottom-0 left-0 right-0 z-40
+      fixed bottom-0 left-0 right-0 z-30
       glass border-t ${cfg.border}
       px-5 py-3 text-sm
       transition-all duration-300
