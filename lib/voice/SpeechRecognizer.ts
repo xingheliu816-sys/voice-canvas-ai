@@ -5,7 +5,8 @@ const SpeechRecognitionAPI =
 
 export interface SpeechCallbacks {
   onInterim: (text: string) => void;
-  onFinal: (text: string) => void;
+  /** 返回 true 表示处理完毕后自动重启监听 */
+  onFinal: (text: string) => Promise<boolean>;
   onError: (error: string) => void;
   onEnd: () => void;
 }
