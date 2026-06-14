@@ -19,6 +19,16 @@ export function validate(command: Command): boolean {
       if (typeof c.height !== 'number' || c.height < 1) return false;
       return true;
     }
+    case 'REPLACE':
+      return !!command.target && !!command.newShape && (!command.newShape.shape || VALID_SHAPES.includes(command.newShape.shape));
+    case 'OVERWRITE_CANVAS':
+      return Array.isArray(command.commands) && command.commands.every(validate);
+    case 'CANVAS_DELETE':
+      return command.target === 'current' || typeof (command.target as any)?.id === 'string' || typeof (command.target as any)?.index === 'number';
+    case 'CANVAS_SWITCH':
+      return command.target === 'next' || command.target === 'prev' || typeof (command.target as any)?.id === 'string' || typeof (command.target as any)?.index === 'number';
+    case 'CANVAS_RENAME':
+      return !!command.name?.trim() && (command.target === 'current' || typeof (command.target as any)?.id === 'string');
     case 'UNKNOWN':
       return false;
     default:
