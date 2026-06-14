@@ -19,7 +19,7 @@ export default function RegisterPage() {
       const res = await fetch('/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password }),
+        body: JSON.stringify({ username, password })
       });
       if (!res.ok) {
         const data = await res.json();
@@ -36,83 +36,42 @@ export default function RegisterPage() {
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-surface-deep p-4">
-      {/* Background ambient glow */}
-      <div className="fixed inset-0 pointer-events-none">
-        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[600px] h-[400px] bg-accent-emerald/5 blur-[120px] rounded-full" />
-        <div className="absolute bottom-1/4 left-1/3 w-[400px] h-[300px] bg-accent-secondary/5 blur-[100px] rounded-full" />
-      </div>
-
-      <div className="w-full max-w-sm relative animate-scale-in">
-        {/* Logo */}
-        <div className="text-center mb-8">
-          <h1 className="font-display text-2xl font-bold text-warm-light tracking-tight">
-            Voice Canvas
-          </h1>
-          <p className="text-warm-muted text-sm mt-1.5">创建账号，开始创作</p>
-        </div>
-
-        {/* Form card */}
-        <form onSubmit={handleSubmit} className="card space-y-5">
-          {error && (
-            <div className="text-xs text-red-400 bg-red-400/5 border border-red-400/15 rounded-lg px-3 py-2.5 animate-slide-up">
-              {error}
-            </div>
-          )}
-
-          <label className="block">
-            <span className="text-xs font-medium text-warm-muted uppercase tracking-wider">用户名</span>
-            <span className="text-[10px] text-warm-dark ml-1">（至少2位）</span>
-            <input
-              className="input-dark mt-1.5"
-              placeholder="输入用户名"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              required
-              minLength={2}
-              autoFocus
-            />
-          </label>
-
-          <label className="block">
-            <span className="text-xs font-medium text-warm-muted uppercase tracking-wider">密码</span>
-            <span className="text-[10px] text-warm-dark ml-1">（至少6位）</span>
-            <input
-              type="password"
-              className="input-dark mt-1.5"
-              placeholder="输入密码"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              minLength={6}
-            />
-          </label>
-
-          <button
-            type="submit"
-            disabled={loading}
-            className="btn-primary w-full text-sm"
-          >
-            {loading ? (
-              <span className="flex items-center justify-center gap-2">
-                <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none">
-                  <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" strokeDasharray="32" strokeLinecap="round" />
-                </svg>
-                注册中…
-              </span>
-            ) : (
-              '注册'
-            )}
-          </button>
-
-          <p className="text-center text-xs text-warm-muted pt-1">
-            已有账号？
-            <Link href="/login" className="text-accent-secondary hover:underline ml-1 font-medium">
-              登录
-            </Link>
-          </p>
-        </form>
-      </div>
+    <main className="flex min-h-screen items-center justify-center">
+      <form onSubmit={handleSubmit} className="w-full max-w-sm space-y-4 rounded-lg bg-white p-8 shadow-sm">
+        <h1 className="text-xl font-semibold">注册</h1>
+        {error && <p className="text-sm text-red-600">{error}</p>}
+        <label className="block">
+          <span className="text-sm text-neutral-600">用户名（至少2位）</span>
+          <input
+            className="mt-1 block w-full rounded border border-neutral-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none"
+            value={username}
+            onChange={e => setUsername(e.target.value)}
+            required
+            minLength={2}
+          />
+        </label>
+        <label className="block">
+          <span className="text-sm text-neutral-600">密码（至少6位）</span>
+          <input
+            type="password"
+            className="mt-1 block w-full rounded border border-neutral-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none"
+            value={password}
+            onChange={e => setPassword(e.target.value)}
+            required
+            minLength={6}
+          />
+        </label>
+        <button
+          type="submit"
+          disabled={loading}
+          className="w-full rounded bg-neutral-900 py-2 text-sm font-medium text-white hover:bg-neutral-700 disabled:opacity-50"
+        >
+          {loading ? '注册中…' : '注册'}
+        </button>
+        <p className="text-center text-sm text-neutral-500">
+          已有账号？<Link href="/login" className="text-blue-600 hover:underline">登录</Link>
+        </p>
+      </form>
     </main>
   );
 }

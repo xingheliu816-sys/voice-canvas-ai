@@ -11,9 +11,5 @@ export function splitText(rawText: string): string[] {
 }
 
 export function buildBatchId(): string {
-  const g = (typeof globalThis !== 'undefined' ? globalThis : window) as any;
-  const uuid =
-    g?.crypto?.randomUUID?.() ??
-    `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
-  return 'batch_' + uuid.slice(0, 8);
+  return 'batch_' + crypto.randomUUID().slice(0, 8);
 }
