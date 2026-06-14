@@ -4,7 +4,13 @@
 
 ## Demo 视频
 
-[待上传 · 请替换为 B 站或云盘链接]
+### 哔哩哔哩视频地址
+https://www.bilibili.com/video/BV1BcJP6oE9N/
+
+### 百度网盘视频地址
+通过网盘分享的文件：20260614_204816.mp4
+链接: https://pan.baidu.com/s/1ddmk2wT9DsQ6gTD4qCLR7Q?pwd=lkjh 提取码: lkjh 
+--来自百度网盘超级会员v4的分享
 
 ## 一键启动
 
