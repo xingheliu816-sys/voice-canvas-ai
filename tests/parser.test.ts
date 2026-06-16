@@ -141,6 +141,117 @@ describe('RuleEngine', () => {
     });
   });
 
+  describe('DRAW_OBJECT / IMAGE_GENERATE 路由', () => {
+    // ── 默认：不触发 AI → 走原生绘制 ──
+    it('画一辆汽车 → DRAW_OBJECT（默认原生绘制，不调 API）', () => {
+      const r = parse('画一辆汽车');
+      expect(r.type).toBe('DRAW_OBJECT');
+      if (r.type === 'DRAW_OBJECT') expect(r.objectKind).toBe('car');
+    });
+
+    it('画一只猫 → DRAW_OBJECT', () => {
+      const r = parse('画一只猫');
+      expect(r.type).toBe('DRAW_OBJECT');
+      if (r.type === 'DRAW_OBJECT') expect(r.objectKind).toBe('cat');
+    });
+
+    it('画一个房子 → DRAW_OBJECT', () => {
+      const r = parse('画一个房子');
+      expect(r.type).toBe('DRAW_OBJECT');
+      if (r.type === 'DRAW_OBJECT') expect(r.objectKind).toBe('house');
+    });
+
+    it('画一棵树 → DRAW_OBJECT', () => {
+      const r = parse('画一棵树');
+      expect(r.type).toBe('DRAW_OBJECT');
+      if (r.type === 'DRAW_OBJECT') expect(r.objectKind).toBe('tree');
+    });
+
+    it('画一个机器人 → DRAW_OBJECT', () => {
+      const r = parse('画一个机器人');
+      expect(r.type).toBe('DRAW_OBJECT');
+      if (r.type === 'DRAW_OBJECT') expect(r.objectKind).toBe('robot');
+    });
+
+    // ── 带 AI 触发词 → 走 IMAGE_GENERATE ──
+    it('画一个真实的房子 → IMAGE_GENERATE（"真实"触发 AI 生成）', () => {
+      const r = parse('画一个真实的房子');
+      expect(r.type).toBe('IMAGE_GENERATE');
+      if (r.type === 'IMAGE_GENERATE') {
+        expect(r.style).toBe('realistic');
+        expect((r as any)._fallbackObjectKind).toBe('house');
+      }
+    });
+
+    it('生成一个3D机器人 → IMAGE_GENERATE 3d（"3D"触发 AI 生成）', () => {
+      const r = parse('生成一个3D机器人');
+      expect(r.type).toBe('IMAGE_GENERATE');
+      if (r.type === 'IMAGE_GENERATE') {
+        expect(r.style).toBe('3d');
+        expect((r as any)._fallbackObjectKind).toBe('robot');
+      }
+    });
+
+    it('画一个立体建模汽车 → IMAGE_GENERATE 3d', () => {
+      const r = parse('画一个立体建模汽车');
+      expect(r.type).toBe('IMAGE_GENERATE');
+      if (r.type === 'IMAGE_GENERATE') {
+        expect(r.style).toBe('3d');
+      }
+    });
+
+    it('画真实的照片风格树 → IMAGE_GENERATE', () => {
+      const r = parse('画真实的照片风格树');
+      expect(r.type).toBe('IMAGE_GENERATE');
+      if (r.type === 'IMAGE_GENERATE') {
+        expect((r as any)._fallbackObjectKind).toBe('tree');
+      }
+    });
+
+    it('生成图片一只猫 → IMAGE_GENERATE（明确说生成图片）', () => {
+      const r = parse('生成图片一只猫');
+      expect(r.type).toBe('IMAGE_GENERATE');
+    });
+
+    // ── 场景 → 始终原生 ──
+    it('画一个公园 → DRAW_SCENE（场景始终走原生绘制）', () => {
+      const r = parse('画一个公园');
+      expect(r.type).toBe('DRAW_SCENE');
+      if (r.type === 'DRAW_SCENE') expect(r.sceneKind).toBe('park');
+    });
+
+    // ── 反例 ──
+    it('用简单图形画一个房子 → mock 兜底', () => {
+      const r = parse('用简单图形画一个房子');
+      expect(r.type).not.toBe('DRAW_OBJECT');
+      expect(r.type).not.toBe('IMAGE_GENERATE');
+    });
+
+    it('画一个圆 → CREATE（基础几何）', () => {
+      const r = parse('画一个圆');
+      expect(r.type).toBe('CREATE');
+    });
+
+    it('删除汽车 → DELETE', () => {
+      const r = parse('删除汽车');
+      expect(r.type).toBe('DELETE');
+    });
+  });
+
+  describe('PROJECT_SAVE 作品保存', () => {
+    it('保存作品 → PROJECT_SAVE', () => {
+      expect(parse('保存作品').type).toBe('PROJECT_SAVE');
+    });
+    it('保存为 我的第一幅画 → PROJECT_SAVE_AS', () => {
+      const r = parse('保存为 我的第一幅画') as any;
+      expect(r.type).toBe('PROJECT_SAVE_AS');
+      expect(r.title).toBe('我的第一幅画');
+    });
+    it('保存一下 → PROJECT_SAVE', () => {
+      expect(parse('保存一下').type).toBe('PROJECT_SAVE');
+    });
+  });
+
   describe('CREATE 自动补全（无动词）', () => {
     it('没有动词只说红色圆', () => {
       const r = parse('红色圆形');

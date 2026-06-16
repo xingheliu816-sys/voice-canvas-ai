@@ -1,13 +1,12 @@
 import type { Command } from './types';
 import { validate } from './SchemaGuard';
-import { useVoiceStore } from '@/lib/voice/useVoiceStore';
 
 export async function tryLLM(text: string): Promise<Command | null> {
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 3000);
+  const timeout = setTimeout(() => controller.abort(), 5000);
 
   try {
-    const res = await fetch('/api/llm/parse', {
+    const res = await fetch('/api/voice-command', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ text }),
@@ -22,10 +21,21 @@ export async function tryLLM(text: string): Promise<Command | null> {
     const json = await res.json();
     if (json.error) return null;
 
-    // 客户端再校验一次（防御性）
-    if (!validate(json as Command)) return null;
+    const ops = Array.isArray(json.ops) ? json.ops : [];
+    if (ops.length === 0) return null;
 
-    return json as Command;
+    if (ops.length === 1) {
+      const command = ops[0] as Command;
+      return validate(command) ? command : null;
+    }
+
+    const batch: Command = {
+      type: 'BATCH',
+      batchId: `llm_${Date.now().toString(36)}`,
+      commands: ops
+    };
+
+    return validate(batch) ? batch : null;
   } catch {
     return null;
   } finally {

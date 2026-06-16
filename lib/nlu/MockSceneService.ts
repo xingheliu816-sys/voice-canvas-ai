@@ -8,42 +8,47 @@ interface MockScene {
 
 const scenes: MockScene[] = [];
 
-// 启动时加载所有场景
 async function loadScenes() {
   if (scenes.length > 0) return;
   const files = [
-    'house', 'smile', 'sun-and-trees', 'garden', 'snowman',
-    'traffic-light', 'heart', 'rainbow', 'christmas-tree', 'taichi'
+    'tree', 'house', 'sun', 'smile', 'cloud', 'flower', 'grass', 'mountain',
+    'sun-and-trees', 'garden', 'snowman', 'traffic-light', 'heart', 'rainbow',
+    'christmas-tree', 'taichi'
   ];
   for (const name of files) {
     try {
       const mod = await import(`@/lib/mock-scenes/${name}.json`);
       scenes.push(mod.default || mod);
-    } catch {}
+    } catch { /* scene file may not exist yet */ }
   }
 }
 
-// 匹配场景：关键词命中
-export async function matchScene(text: string): Promise<CanvasObject[] | null> {
+export async function matchScene(text: string): Promise<{ objects: CanvasObject[]; sceneName: string } | null> {
   await loadScenes();
-  const lower = text.toLowerCase();
+  // 收集所有匹配，按关键词长度降序排列，优先匹配更长/更具体的关键词
+  let bestMatch: { scene: MockScene; kwLen: number } | null = null;
   for (const scene of scenes) {
-    if (scene.keywords.some((kw) => lower.includes(kw))) {
-      // 为每个对象生成唯一 id 避免冲突
-      const batchPrefix = `mock_${scene.name}_${Date.now()}_`;
-      return scene.objects.map((obj, i) => ({
-        ...obj,
-        id: batchPrefix + i,
-        index: 0,
-        createdAt: Date.now(),
-        batchId: batchPrefix.slice(0, -1)
-      }));
+    for (const kw of scene.keywords) {
+      if (text.includes(kw) && kw.length > (bestMatch?.kwLen ?? 0)) {
+        bestMatch = { scene, kwLen: kw.length };
+      }
     }
+  }
+  if (bestMatch) {
+    const scene = bestMatch.scene;
+    const batchPrefix = `mock_${scene.name}_${Date.now()}_`;
+    const objects = scene.objects.map((obj, i) => ({
+      ...obj,
+      id: batchPrefix + i,
+      index: 0,
+      createdAt: Date.now(),
+      batchId: batchPrefix.slice(0, -1)
+    }));
+    return { objects, sceneName: scene.name };
   }
   return null;
 }
 
-// 获取所有已加载场景名
 export function getSceneNames(): string[] {
   return scenes.map((s) => s.name);
 }
