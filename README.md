@@ -31,9 +31,30 @@ Chrome / Edge 最新版（依赖 Web Speech API 语音识别）。
 
 ## 是否需要 API Key
 
-**不填 Key 也能完整运行**。系统默认使用本地规则引擎 + Mock 场景演示复合指令拆解。
+**不填 Key 也能完整运行**。系统默认使用本地规则引擎 + Mock 场景演示复合指令拆解，并在网络或 LLM 不可用时使用离线模糊兜底。
 
-在 `.env.local` 中配置 `ANTHROPIC_API_KEY` 可启用 LLM 增强解析，处理更复杂的自然语言指令。
+在 `.env.local` 中配置 `DEEPSEEK_API_KEY` 可启用 `/api/voice-command` 的 DeepSeek Function Calling 增强解析，处理更复杂的自然语言指令。旧版 `ANTHROPIC_API_KEY` 接口仍保留为兼容路径。
+
+## 语音指令解析链路
+
+```text
+用户语音
+  -> Web Speech API 浏览器原生识别
+  -> 文本指令
+  -> /api/voice-command
+     -> Layer 1: 本地规则引擎 Regex + 同义词词典
+     -> Layer 2: DeepSeek deepseek-chat Function Calling
+     -> Layer 3: 离线兜底 模糊匹配 + 默认样式
+  -> 操作 JSON
+  -> React Konva 画布执行和渲染
+```
+
+路由策略：
+
+- 含 `AI`、`智能`、`帮我`、`你觉得`、`随便` 等显式 AI 触发词时，优先调用 DeepSeek。
+- 本地规则高置信命中时直接返回，保持基础绘图指令的低延迟。
+- DeepSeek 超时、未配置 Key 或网络失败时，进入离线兜底，不阻断基础绘图。
+- 普通绘制默认追加图形；只有明确说“覆盖原图 / 替换原图 / 清空原来的再画”才进入破坏性操作流程。
 
 ## 功能清单
 
@@ -44,6 +65,7 @@ Chrome / Edge 最新版（依赖 Web Speech API 语音识别）。
 | 账号 | 注册、登录、HttpOnly Cookie 鉴权 | ✅ |
 | 语音 | Web Speech API 实时识别、连续对话自动重启、暂停/恢复 | ✅ |
 | 解析 | 规则引擎 + 同义词归一化 + ASR 错字修正 | ✅ |
+| AI 路由 | `/api/voice-command` 三层解析：本地规则、DeepSeek、离线兜底 | ✅ |
 | 绘图 | 圆、矩形、三角形、直线、文字 | ✅ |
 | 样式 | 填充色、描边、透明度、尺寸（大/中/小）、空心/实心 | ✅ |
 | 位置 | 九宫格（左上/中间/右下…） | ✅ |
@@ -106,14 +128,14 @@ voice-canvas-ai/
 │   └── CommandLog.tsx              # 指令历史
 ├── lib/
 │   ├── voice/                      # 语音层（ASR + TTS + 状态机）
-│   ├── nlu/                        # NLU 层（归一化 + 规则 + Mock + LLM）
+│   ├── nlu/                        # NLU 层（归一化 + 规则 + Mock + DeepSeek + 兜底）
 │   ├── canvas/                     # 绘图层（Store + Executor + History）
 │   ├── db/                         # SQLite 初始化
 │   ├── auth/                       # JWT + Cookie 工具
 │   ├── api/                        # 前端 API 封装
 │   ├── mock-scenes/*.json          # 10 个预置场景
 │   └── synonyms/synonyms.json      # 同义词表
-├── tests/                          # 测试（103 条）
+├── tests/                          # 测试（118 条）
 ├── data/                           # SQLite 数据库（运行时创建）
 ├── storage/thumbnails/             # 缩略图（运行时创建）
 └── docs/                           # 设计文档
@@ -130,7 +152,8 @@ voice-canvas-ai/
 | better-sqlite3 | ^12 | 本地数据库 | 第三方 |
 | bcryptjs | ^2 | 密码哈希 | 第三方 |
 | jose | ^5 | JWT 签名 | 第三方 |
-| @anthropic-ai/sdk | ^0.37 | LLM 调用（可选） | 第三方 |
+| @anthropic-ai/sdk | ^0.104 | 旧版 LLM 调用兼容路径（可选） | 第三方 |
+| DeepSeek API | deepseek-chat | OpenAI 兼容 Function Calling 指令解析（可选） | 第三方服务 |
 | tailwindcss | ^3.4 | 样式 | 第三方 |
 | vitest | ^1.6 | 测试框架 | 第三方 |
 | 多画布标签系统 | - | 画布管理 | **原创** |
@@ -138,6 +161,7 @@ voice-canvas-ai/
 | NLU 规则引擎 | - | 指令理解 | **原创** |
 | 同义词归一化 | - | 口语容错 | **原创** |
 | Mock 场景系统 | - | 复合指令演示 | **原创** |
+| 三层语音指令路由 | - | 本地规则 / DeepSeek / 离线兜底 | **原创** |
 | 语音绘图管线 | - | 端到端串联 | **原创** |
 | 设计系统 | - | 深色主题+动效 | **原创** |
 
