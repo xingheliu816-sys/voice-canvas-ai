@@ -1,0 +1,52 @@
+{
+  "name": "flower",
+  "keywords": [
+    "画花","画一朵花","画个花","小花","花朵","红花","画小花","画花朵",
+    "来一朵花","加一朵花","花"
+  ],
+  "objects": [
+    {
+      "id":"fl_stem","name":"花茎","shape":"line",
+      "x":400,"y":350,"width":0,"height":0,
+      "fill":"#22C55E","stroke":"#16A34A","strokeWidth":4,"opacity":1,
+      "rotation":0,"scaleX":1,"scaleY":1,
+      "points":[400,260,400,400]
+    },
+    {
+      "id":"fl_center","name":"花心","shape":"circle",
+      "x":400,"y":240,"width":30,"height":30,
+      "fill":"#FFD700","stroke":"#FFA500","strokeWidth":1,"opacity":1,
+      "rotation":0,"scaleX":1,"scaleY":1
+    },
+    {
+      "id":"fl_p1","name":"花瓣上","shape":"circle",
+      "x":400,"y":195,"width":35,"height":35,
+      "fill":"#FF6B6B","stroke":"#E55050","strokeWidth":1,"opacity":0.9,
+      "rotation":0,"scaleX":1,"scaleY":1
+    },
+    {
+      "id":"fl_p2","name":"花瓣下","shape":"circle",
+      "x":400,"y":285,"width":35,"height":35,
+      "fill":"#FF6B6B","stroke":"#E55050","strokeWidth":1,"opacity":0.9,
+      "rotation":0,"scaleX":1,"scaleY":1
+    },
+    {
+      "id":"fl_p3","name":"花瓣左","shape":"circle",
+      "x":355,"y":240,"width":35,"height":35,
+      "fill":"#FF6B6B","stroke":"#E55050","strokeWidth":1,"opacity":0.9,
+      "rotation":0,"scaleX":1,"scaleY":1
+    },
+    {
+      "id":"fl_p4","name":"花瓣右","shape":"circle",
+      "x":445,"y":240,"width":35,"height":35,
+      "fill":"#FF6B6B","stroke":"#E55050","strokeWidth":1,"opacity":0.9,
+      "rotation":0,"scaleX":1,"scaleY":1
+    },
+    {
+      "id":"fl_leaf","name":"叶子","shape":"circle",
+      "x":420,"y":340,"width":30,"height":20,
+      "fill":"#22C55E","stroke":"#16A34A","strokeWidth":1,"opacity":0.85,
+      "rotation":0,"scaleX":1,"scaleY":1
+    }
+  ]
+}

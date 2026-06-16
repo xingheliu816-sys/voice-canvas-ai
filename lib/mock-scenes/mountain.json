@@ -1,0 +1,39 @@
+{
+  "name": "mountain",
+  "keywords": [
+    "画山","画一座山","画大山","远山","山峰","大山","画个山",
+    "来一座山","加一座山","山"
+  ],
+  "objects": [
+    {
+      "id":"mt_sky","name":"天空","shape":"rect",
+      "x":100,"y":50,"width":600,"height":200,
+      "fill":"#87CEEB","stroke":"#5BA3D9","strokeWidth":1,"opacity":0.3,
+      "rotation":0,"scaleX":1,"scaleY":1
+    },
+    {
+      "id":"mt_big","name":"大山","shape":"triangle",
+      "x":400,"y":150,"width":400,"height":250,
+      "fill":"#6B7280","stroke":"#4B5563","strokeWidth":2,"opacity":1,
+      "rotation":0,"scaleX":1,"scaleY":1
+    },
+    {
+      "id":"mt_small","name":"小山","shape":"triangle",
+      "x":240,"y":220,"width":250,"height":180,
+      "fill":"#9CA3AF","stroke":"#6B7280","strokeWidth":2,"opacity":0.85,
+      "rotation":0,"scaleX":1,"scaleY":1
+    },
+    {
+      "id":"mt_snow","name":"雪顶","shape":"triangle",
+      "x":400,"y":165,"width":140,"height":60,
+      "fill":"#FFFFFF","stroke":"#E5E7EB","strokeWidth":1,"opacity":0.8,
+      "rotation":0,"scaleX":1,"scaleY":1
+    },
+    {
+      "id":"mt_ground","name":"山脚","shape":"rect",
+      "x":100,"y":400,"width":600,"height":40,
+      "fill":"#4ADE80","stroke":"#22C55E","strokeWidth":1,"opacity":0.5,
+      "rotation":0,"scaleX":1,"scaleY":1
+    }
+  ]
+}
